@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vercel Image Gallery Studio</title>
+    <style>
+        :root {
+            --primary: #6366f1; /* Indigo for modern look */
+            --primary-hover: #4f46e5;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #22c55e;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 { font-size: 1.25rem; font-weight: 700; color: white; }
+
+        /* Main Layout */
+        main {
+            max-width: 1200px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            main { grid-template-columns: 1fr; }
+        }
+
+        /* Sidebar Controls */
+        .sidebar {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            height: fit-content;
+        }
+
+        .control-group { margin-bottom: 1.5rem; }
+        .control-group label { display: block; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; font-weight: 600; }
+
+        /* Buttons & Inputs */
+        input[type="file"] { display: none; }
+        
+        .upload-box {
+            border: 2px dashed var(--border);
+            padding: 2rem;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: 0.2s;
+        }
+        .upload-box:hover { border-color: var(--primary); color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn-outline:hover { border-color: var(--text-main); color: var(--text-main); }
+        .btn-active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 6px;
+        }
+
+        /* Editor Area */
+        .editor-area {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .canvas-container {
+            background: #000;
+            /* Checkerboard pattern for transparency */
+            background-image: linear-gradient(45deg, #1a1a1a 25%, transparent 25%), linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a1a1a 75%), linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+            background-size: 20px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        canvas { max-width: 100%; max-height: 600px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); }
+
+        /* Gallery Grid */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        
+        .gallery-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .gallery-item:hover img { transform: scale(1.05); }
+
+        .gallery-actions {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: rgba(0,0,0,0.8);
+            padding: 8px;
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .gallery-item:hover .gallery-actions { opacity: 1; }
+        .gallery-actions button { margin: 0; padding: 4px; font-size: 0.8rem; }
+
+        /* Status */
+        .status-msg {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            background: var(--bg-card);
+            color: var(--text-main);
+            padding: 10px 20px;
+            border-radius: 6px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+            transform: translateY(150%);
+            transition: transform 0.3s;
+        }
+        .status-msg.show { transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Vercel Image Studio</h1>
+    <span style="color: var(--text-muted); font-size: 0.8rem;">v2.0 (Static Optimized)</span>
+</header>
+
+<main>
+    <!-- Sidebar Controls -->
+    <aside class="sidebar">
+        <div class="control-group">
+            <label>1. Select Image</label>
+            <label for="fileInput" class="upload-box">
+                <span>Click to Browse</span>
+            </label>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+
+        <div class="control-group">
+            <label>2. Resize</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="range" id="resizeRange" min="10" max="100" value="100" style="flex: 1;">
+                <span id="resizeVal" style="font-size: 0.9rem; width: 40px;">100%</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>3. Filters</label>
+            <button id="btnGray" class="btn-outline" onclick="toggleFilter('grayscale')">Grayscale</button>
+            <button id="btnInvert" class="btn-outline" onclick="toggleFilter('invert')">Invert Colors</button>
+            <button id="btnSepia" class="btn-outline" onclick="toggleFilter('sepia')">Sepia Tone</button>
+        </div>
+
+        <div class="control-group">
+            <label>4. Watermark</label>
+            <input type="text" id="wmText" placeholder="Type text here...">
+            <button class="btn-primary" style="margin-top: 0.5rem;" onclick="saveToGallery()">Save to Gallery</button>
+        </div>
+    </aside>
+
+    <!-- Main Editor & Gallery -->
+    <section class="editor-area">
+        <!-- Canvas View -->
+        <div class="canvas-container" id="canvasContainer">
+            <p style="color: var(--text-muted);" id="emptyText">No image loaded</p>
+            <canvas id="mainCanvas" style="display: none;"></canvas>
+        </div>
+
+        <!-- Gallery Section -->
+        <div>
+            <h3 style="margin-bottom: 1rem; color: var(--text-muted);">Session Gallery</h3>
+            <div class="gallery-grid" id="galleryGrid">
+                <!-- Items appear here -->
+            </div>
+        </div>
+    </section>
+</main>
+
+<div id="status" class="status-msg">Image Saved!</div>
+
+<script>
+    // Configuration
+    const state = {
+        originalImage: null,
+        scale: 100,
+        filters: {
+            grayscale: false,
+            invert: false,
+            sepia: false
+        },
+        watermark: ''
+    };
+
+    // DOM Elements
+    const fileInput = document.getElementById('fileInput');
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d');
+    const emptyText = document.getElementById('emptyText');
+    const resizeRange = document.getElementById('resizeRange');
+    const resizeVal = document.getElementById('resizeVal');
+    const wmText = document.getElementById('wmText');
+    const galleryGrid = document.getElementById('galleryGrid');
+    const statusEl = document.getElementById('status');
+
+    // Event Listeners
+    fileInput.addEventListener('change', (e) => {
+        if(e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const img = new Image();
+                img.onload = () => {
+                    state.originalImage = img;
+                    state.scale = 100;
+                    resizeRange.value = 100;
+                    resizeVal.innerText = '100%';
+                    // Show canvas
+                    emptyText.style.display = 'none';
+                    canvas.style.display = 'block';
+                    render();
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+
+    resizeRange.addEventListener('input', (e) => {
+        state.scale = parseInt(e.target.value);
+        resizeVal.innerText = state.scale + '%';
+        render();
+    });
+
+    wmText.addEventListener('input', (e) => {
+        state.watermark = e.target.value;
+        render();
+    });
+
+    // Functions
+    function toggleFilter(filterName) {
+        state.filters[filterName] = !state.filters[filterName];
+        // Update button UI
+        const btnId = 'btn' + filterName.charAt(0).toUpperCase() + filterName.slice(1);
+        const btn = document.getElementById(btnId);
+        if(state.filters[filterName]) {
+            btn.classList.add('btn-active');
+            btn.classList.remove('btn-outline');
+        } else {
+            btn.classList.remove('btn-active');
+            btn.classList.add('btn-outline');
+        }
+        render();
+    }
+
+    function render() {
+        if(!state.originalImage) return;
+
+        const width = Math.floor(state.originalImage.width * (state.scale / 100));
+        const height = Math.floor(state.originalImage.height * (state.scale / 100));
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Apply Filters
+        let filterString = '';
+        if(state.filters.grayscale) filterString += 'grayscale(100%) ';
+        if(state.filters.invert) filterString += 'invert(100%) ';
+        if(state.filters.sepia) filterString += 'sepia(100%) ';
+        
+        ctx.filter = filterString.trim();
+        ctx.drawImage(state.originalImage, 0, 0, width, height);
+        
+        // Draw Watermark (Remove filter so text is clear)
+        ctx.filter = 'none';
+        if(state.watermark) {
+            const fontSize = Math.max(16, width / 20);
+            ctx.font = `bold ${fontSize}px sans-serif`;
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.textAlign = "right";
+            ctx.textBaseline = "bottom";
+            
+            // Add shadow for better visibility
+            ctx.shadowColor = "rgba(0,0,0,0.8)";
+            ctx.shadowBlur = 4;
+            
+            ctx.fillText(state.watermark, width - 20, height - 20);
+            ctx.shadowBlur = 0; // Reset shadow
+        }
+    }
+
+    function saveToGallery() {
+        if(!state.originalImage) {
+            showToast("Please upload an image first!", true);
+            return;
+        }
+
+        // Create data URL
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+        // Create DOM Element
+        const div = document.createElement('div');
+        div.className = 'gallery-item';
+        
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        
+        const actions = document.createElement('div');
+        actions.className = 'gallery-actions';
+        
+        // Download Button
+        const dlBtn = document.createElement('button');
+        dlBtn.className = 'btn-primary';
+        dlBtn.innerText = 'DL';
+        dlBtn.onclick = () => {
+            const a = document.createElement('a');
+            a.download = `edited-${Date.now()}.jpg`;
+            a.href = dataUrl;
+            a.click();
+        };
+
+        actions.appendChild(dlBtn);
+        div.appendChild(img);
+        div.appendChild(actions);
+        
+        // Add to start of grid
+        galleryGrid.prepend(div);
+        showToast("Saved to Gallery");
+    }
+
+    function showToast(msg, isError = false) {
+        statusEl.innerText = msg;
+        statusEl.style.borderLeftColor = isError ? '#ef4444' : '#22c55e';
+        statusEl.classList.add('show');
+        setTimeout(() => statusEl.classList.remove('show'), 3000);
+    }
+</script>
+
+</body>
+</html>
