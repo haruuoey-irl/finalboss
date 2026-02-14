@@ -6,36 +6,55 @@
     <title>Haruueyy's Gallery Studio</title>
     <style>
         :root {
-            --primary: #6366f1; /* Indigo for modern look */
-            --primary-hover: #4f46e5;
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #334155;
-            --success: #22c55e;
+            /* "Light Black" / Charcoal Palette */
+            --bg-main: #121212;       /* Main background - light black */
+            --bg-card: #1e1e1e;       /* Card background - slightly lighter */
+            --bg-hover: #2a2a2a;      /* Hover state */
+            
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+            
+            /* Rainbow Gradient Definition */
+            --rainbow-gradient: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 
         body {
-            background-color: var(--bg-dark);
+            background-color: var(--bg-main);
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* Header */
+        /* Header - Dark with Rainbow Border */
         header {
             background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
+            border-bottom: 4px solid transparent;
+            border-image: var(--rainbow-gradient) 1;
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        header h1 { font-size: 1.25rem; font-weight: 700; color: white; }
+        
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            /* Rainbow Text Animation */
+            background: var(--rainbow-gradient);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbowShift 3s linear infinite;
+        }
+
+        @keyframes rainbowShift {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
 
         /* Main Layout */
         main {
@@ -53,31 +72,39 @@
             main { grid-template-columns: 1fr; }
         }
 
-        /* Sidebar Controls */
+        /* Sidebar Controls - Dark Card with Rainbow Border */
         .sidebar {
             background: var(--bg-card);
             padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
+            border-radius: 12px;
+            border: 2px solid transparent;
+            border-image: var(--rainbow-gradient) 1;
             height: fit-content;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         .control-group { margin-bottom: 1.5rem; }
-        .control-group label { display: block; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; font-weight: 600; }
+        .control-group label { display: block; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
         /* Buttons & Inputs */
         input[type="file"] { display: none; }
         
         .upload-box {
-            border: 2px dashed var(--border);
+            border: 2px dashed #444;
+            background: var(--bg-main);
             padding: 2rem;
             text-align: center;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             color: var(--text-muted);
-            transition: 0.2s;
+            transition: 0.3s;
         }
-        .upload-box:hover { border-color: var(--primary); color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+        .upload-box:hover { 
+            border-color: transparent; 
+            background: var(--bg-hover); 
+            box-shadow: 0 0 0 2px #ff00c8, 0 0 15px #ff00c855; /* Pink glow on hover */
+            color: #ff00c8; 
+        }
 
         button {
             width: 100%;
@@ -88,21 +115,78 @@
             cursor: pointer;
             transition: 0.2s;
             margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
         }
 
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
-        .btn-outline:hover { border-color: var(--text-main); color: var(--text-main); }
-        .btn-active { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-primary { 
+            color: white;
+            background: var(--rainbow-gradient);
+            background-size: 200% auto;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+        .btn-primary:hover { 
+            background-position: right center; 
+            box-shadow: 0 10px 15px -3px rgba(255, 0, 200, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline { 
+            background: var(--bg-main); 
+            border: 2px solid #444; 
+            color: var(--text-muted); 
+        }
+        .btn-outline:hover { 
+            border-color: #ff00c8; 
+            color: #ff00c8; 
+            background: rgba(255, 0, 200, 0.1);
+        }
+        
+        .btn-active { 
+            background: var(--rainbow-gradient); 
+            color: white; 
+            border: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
 
         input[type="text"] {
             width: 100%;
             padding: 0.75rem;
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            color: white;
+            background: var(--bg-main);
+            border: 2px solid #444;
+            color: var(--text-main);
             border-radius: 6px;
+            transition: 0.2s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #00ffd5; /* Cyan focus */
+            box-shadow: 0 0 0 3px rgba(0, 255, 213, 0.1);
+        }
+
+        /* Range Slider Styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--rainbow-gradient);
+            outline: none;
+            opacity: 0.9;
+            transition: opacity .2s;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: 2px solid #ff00c8;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         /* Editor Area */
@@ -113,20 +197,22 @@
         }
 
         .canvas-container {
-            background: #000;
-            /* Checkerboard pattern for transparency */
-            background-image: linear-gradient(45deg, #1a1a1a 25%, transparent 25%), linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a1a1a 75%), linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+            background: var(--bg-card);
+            /* Dark Checkerboard pattern for transparency */
+            background-image: linear-gradient(45deg, #222 25%, transparent 25%), linear-gradient(-45deg, #222 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #222 75%), linear-gradient(-45deg, transparent 75%, #222 75%);
             background-size: 20px 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
+            background-color: #1a1a1a;
+            border-radius: 12px;
+            border: 2px solid #333;
             min-height: 400px;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
 
-        canvas { max-width: 100%; max-height: 600px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); }
+        canvas { max-width: 100%; max-height: 600px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); }
 
         /* Gallery Grid */
         .gallery-grid {
@@ -140,17 +226,25 @@
             border-radius: 8px;
             overflow: hidden;
             aspect-ratio: 1;
-            border: 1px solid var(--border);
+            border: 2px solid #333;
             background: var(--bg-card);
+            transition: 0.3s;
         }
 
         .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
         .gallery-item:hover img { transform: scale(1.05); }
+        
+        /* Rainbow Border on Hover for Gallery Items */
+        .gallery-item:hover {
+            border: 2px solid transparent;
+            box-shadow: 0 0 0 1px var(--bg-main), 0 0 0 3px #ff00c8; /* Pink highlight */
+        }
 
         .gallery-actions {
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(4px);
             padding: 8px;
             display: flex;
             gap: 5px;
@@ -167,11 +261,13 @@
             background: var(--bg-card);
             color: var(--text-main);
             padding: 10px 20px;
-            border-radius: 6px;
-            border-left: 4px solid var(--primary);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+            border-radius: 50px; /* Pill shape */
+            border: 2px solid transparent;
+            border-image: var(--rainbow-gradient) 1;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
             transform: translateY(150%);
             transition: transform 0.3s;
+            font-weight: 600;
         }
         .status-msg.show { transform: translateY(0); }
     </style>
@@ -179,8 +275,8 @@
 <body>
 
 <header>
-    <h1>Vercel Image Studio</h1>
-    <span style="color: var(--text-muted); font-size: 0.8rem;">v2.0 (Static Optimized)</span>
+    <h1>HarueeyyySH</h1>
+    <span style="color: var(--text-muted); font-size: 0.8rem;">v3.1 (Dark Rainbow Edition)</span>
 </header>
 
 <main>
@@ -198,7 +294,7 @@
             <label>2. Resize</label>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <input type="range" id="resizeRange" min="10" max="100" value="100" style="flex: 1;">
-                <span id="resizeVal" style="font-size: 0.9rem; width: 40px;">100%</span>
+                <span id="resizeVal" style="font-size: 0.9rem; width: 40px; font-weight: bold; color: #ffffff;">100%</span>
             </div>
         </div>
 
@@ -386,7 +482,7 @@
 
     function showToast(msg, isError = false) {
         statusEl.innerText = msg;
-        statusEl.style.borderLeftColor = isError ? '#ef4444' : '#22c55e';
+        statusEl.style.border = "2px solid " + (isError ? '#ef4444' : '#22c55e'); // Solid border for status
         statusEl.classList.add('show');
         setTimeout(() => statusEl.classList.remove('show'), 3000);
     }
@@ -394,4 +490,3 @@
 
 </body>
 </html>
-
