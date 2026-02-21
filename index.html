@@ -1,19 +1,44 @@
+<!--
+MIT License
+
+Copyright (c) 2024 Haruueyy
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- WebViewer Optimized Viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Haruueyy's Gallery Studio</title>
     <style>
         :root {
             /* Dark Mode (Default) */
-            --bg-main: transparent; /* Changed to transparent to see matrix */
-            --bg-card: rgba(30, 30, 30, 0.85); /* Slight transparency for effect */
+            --bg-main: transparent; 
+            --bg-card: rgba(20, 20, 20, 0.92);
             --bg-hover: #2a2a2a;
             --text-main: #ffffff;
             --text-muted: #aaaaaa;
             --border-color: #333333;
-            --input-bg: rgba(18, 18, 18, 0.9);
+            --input-bg: rgba(18, 18, 18, 0.95);
             
             /* Rainbow Gradient */
             --rainbow-gradient: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
@@ -21,43 +46,46 @@
 
         /* Light Mode Variables */
         body.light-mode {
-            --bg-main: #f0f2f5;
-            --bg-card: #ffffff;
+            --bg-main: transparent; /* Transparent to show matrix */
+            --bg-card: rgba(255, 255, 255, 0.92); /* Solid white background for cards */
             --bg-hover: #e4e6e9;
             --text-main: #1e1e1e;
             --text-muted: #555555;
             --border-color: #dddddd;
-            --input-bg: #f0f2f5;
+            --input-bg: rgba(255, 255, 255, 0.95);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 
         body {
-            background-color: #000; /* Fallback */
+            background-color: #000000; /* Base black for dark mode matrix */
             color: var(--text-main);
             min-height: 100vh;
+            height: 100%;
             display: flex;
             flex-direction: column;
             transition: background-color 0.3s, color 0.3s;
-            overflow-x: hidden; /* Prevent horizontal scroll from matrix */
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* Override for Light Mode Body BG */
+        body.light-mode {
+            background-color: #ffffff; /* Base white for light mode matrix */
         }
 
         /* ==========================================
-           MATRIX BACKGROUND CANVAS
+           MATRIX BACKGROUND CANVAS (WebViewer Ready)
            ========================================== */
         #matrixCanvas {
             position: fixed;
             top: 0;
             left: 0;
-            z-index: -1; /* Behind everything */
-            pointer-events: none; /* Let clicks pass through */
-            opacity: 1;
-            transition: opacity 0.5s ease;
-        }
-
-        /* Hide Matrix in Light Mode */
-        body.light-mode #matrixCanvas {
-            opacity: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; /* Sits on top of body background, behind UI elements */
+            pointer-events: none; /* CRITICAL: Let clicks pass through to UI */
+            opacity: 0.8; /* Visible in dark mode */
         }
 
         /* Header */
@@ -71,8 +99,8 @@
             align-items: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             transition: background-color 0.3s;
-            position: relative; /* Ensure it sits above bg */
-            z-index: 1;
+            position: relative;
+            z-index: 2; /* Above matrix */
         }
         
         header h1 {
@@ -83,51 +111,68 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: rainbowShift 3s linear infinite;
+            flex: 1;
         }
 
-        /* Theme Switch Styles */
-        .theme-switch-container {
+        /* Live World Clock Styles */
+        .header-clock {
+            flex: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 10px;
-        }
-        
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 26px;
+            justify-content: center;
+            text-align: center;
         }
 
+        .time-display {
+            font-family: 'Share Tech Mono', monospace;
+            color: #00ff00; /* Matrix Green */
+            font-size: 1.2rem;
+            text-shadow: 0 0 5px #00ff00;
+            letter-spacing: 1px;
+        }
+        
+        /* Adjust clock color for light mode readability */
+        body.light-mode .time-display {
+            color: #008800; /* Darker green for white background */
+            text-shadow: none;
+        }
+
+        .world-time {
+            font-size: 0.75rem;
+            color: #0ff;
+            opacity: 0.8;
+            margin-top: 2px;
+            text-shadow: 0 0 3px #0ff;
+        }
+        
+        body.light-mode .world-time {
+            color: #006666;
+            text-shadow: none;
+        }
+
+        .theme-switch-container { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-
         .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #444;
-            transition: .4s;
-            border-radius: 34px;
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #444; transition: .4s; border-radius: 34px;
         }
-        
         .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+            position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px;
+            background-color: white; transition: .4s; border-radius: 50%;
         }
-
         input:checked + .slider { background: var(--rainbow-gradient); }
         input:checked + .slider:before { transform: translateX(24px); }
 
-        @keyframes rainbowShift {
-            0% { background-position: 0% center; }
-            100% { background-position: 200% center; }
+        @keyframes rainbowShift { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+
+        /* Responsive Header */
+        @media (max-width: 768px) {
+            header { flex-wrap: wrap; gap: 10px; padding: 1rem; }
+            header h1 { order: 1; flex-basis: 100%; text-align: center; }
+            .header-clock { order: 2; flex-basis: 100%; margin-bottom: 5px; }
+            .theme-switch-container { order: 3; flex-basis: 100%; justify-content: center; }
         }
 
         /* Main Layout */
@@ -140,12 +185,12 @@
             grid-template-columns: 320px 1fr;
             gap: 2rem;
             flex: 1;
-            position: relative; 
-            z-index: 1;
+            position: relative;
+            z-index: 1; /* Above matrix */
         }
 
-        @media (max-width: 768px) {
-            main { grid-template-columns: 1fr; }
+        @media (max-width: 900px) {
+            main { grid-template-columns: 1fr; padding: 0 0.5rem; margin: 1rem auto; }
             .sidebar { order: 2; }
             .editor-area { order: 1; }
         }
@@ -159,150 +204,61 @@
             height: fit-content;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             transition: background-color 0.3s, border-color 0.3s;
+            position: relative; z-index: 1;
         }
-
-        /* Rainbow Border on Hover for Sidebar */
-        .sidebar:hover {
-            border: 2px solid transparent;
-            border-image: var(--rainbow-gradient) 1;
-        }
-
+        .sidebar:hover { border: 2px solid transparent; border-image: var(--rainbow-gradient) 1; }
         .control-group { margin-bottom: 1.5rem; }
         .control-group label { 
-            display: block; 
-            color: var(--text-muted); 
-            font-size: 0.85rem; 
-            margin-bottom: 0.5rem; 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
+            display: block; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; 
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; 
         }
 
         /* Inputs & Buttons */
         input[type="file"] { display: none; }
-        
         .upload-box {
-            border: 2px dashed var(--border-color);
-            background: var(--input-bg);
-            padding: 2rem;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: 0.3s;
+            border: 2px dashed var(--border-color); background: var(--input-bg); padding: 2rem;
+            text-align: center; border-radius: 8px; cursor: pointer; color: var(--text-muted); transition: 0.3s;
         }
-        .upload-box:hover { 
-            border-color: transparent; 
-            background: var(--bg-hover); 
-            box-shadow: 0 0 0 2px #ff00c8, 0 0 15px #ff00c855; 
-            color: #ff00c8; 
-        }
-
+        .upload-box:hover { border-color: transparent; background: var(--bg-hover); box-shadow: 0 0 0 2px #ff00c8, 0 0 15px #ff00c855; color: #ff00c8; }
+        
         button {
-            width: 100%;
-            padding: 0.75rem;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
+            width: 100%; padding: 0.75rem; border: none; border-radius: 6px;
+            font-weight: 600; cursor: pointer; transition: 0.2s; margin-bottom: 0.5rem;
+            text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px;
         }
 
-        .btn-primary { 
-            color: white;
-            background: var(--rainbow-gradient);
-            background-size: 200% auto;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .btn-primary:hover { 
-            background-position: right center; 
-            transform: translateY(-2px);
-        }
-        
-        .btn-outline { 
-            background: var(--input-bg); 
-            border: 2px solid var(--border-color); 
-            color: var(--text-muted); 
-        }
-        .btn-outline:hover { 
-            border-color: #ff00c8; 
-            color: #ff00c8; 
-            background: rgba(255, 0, 200, 0.1);
-        }
-        
-        .btn-active { 
-            background: var(--rainbow-gradient); 
-            color: white; 
-            border: none;
-        }
+        .btn-primary { color: white; background: var(--rainbow-gradient); background-size: 200% auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .btn-primary:hover { background-position: right center; transform: translateY(-2px); }
+        .btn-outline { background: var(--input-bg); border: 2px solid var(--border-color); color: var(--text-muted); }
+        .btn-outline:hover { border-color: #ff00c8; color: #ff00c8; background: rgba(255, 0, 200, 0.1); }
+        .btn-active { background: var(--rainbow-gradient); color: white; border: none; }
+        .btn-reset { background: transparent; border: 1px solid #ef4444; color: #ef4444; }
+        .btn-reset:hover { background: #ef4444; color: white; }
 
-        .btn-reset {
-            background: transparent;
-            border: 1px solid #ef4444;
-            color: #ef4444;
-        }
-        .btn-reset:hover {
-            background: #ef4444;
-            color: white;
-        }
+        .btn-preset { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.7rem; }
+        .btn-preset:hover { border-image: var(--rainbow-gradient) 1; color: white; }
 
         input[type="text"] {
-            width: 100%;
-            padding: 0.75rem;
-            background: var(--input-bg);
-            border: 2px solid var(--border-color);
-            color: var(--text-main);
-            border-radius: 6px;
-            transition: 0.2s;
+            width: 100%; padding: 0.75rem; background: var(--input-bg); border: 2px solid var(--border-color);
+            color: var(--text-main); border-radius: 6px; transition: 0.2s;
         }
-        
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #00ffd5;
-            box-shadow: 0 0 0 3px rgba(0, 255, 213, 0.1);
-        }
+        input[type="text"]:focus { outline: none; border-color: #00ffd5; box-shadow: 0 0 0 3px rgba(0, 255, 213, 0.1); }
 
         /* Range Sliders */
         input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: var(--border-color);
-            outline: none;
-            margin-bottom: 5px;
+            -webkit-appearance: none; width: 100%; height: 6px; border-radius: 3px;
+            background: var(--border-color); outline: none; margin-bottom: 5px;
         }
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: white;
-            cursor: pointer;
-            border: 2px solid #ff00c8;
+            -webkit-appearance: none; appearance: none; width: 16px; height: 16px;
+            border-radius: 50%; background: white; cursor: pointer; border: 2px solid #ff00c8;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-
-        .range-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            margin-bottom: 2px;
-        }
+        .range-header { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 2px; }
         .range-val { color: var(--text-main); font-weight: bold; }
 
         /* Editor Area */
-        .editor-area {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
+        .editor-area { display: flex; flex-direction: column; gap: 2rem; }
         .canvas-container {
             background: var(--bg-card);
             background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), 
@@ -310,20 +266,12 @@
                               linear-gradient(45deg, transparent 75%, #ccc 75%), 
                               linear-gradient(-45deg, transparent 75%, #ccc 75%);
             background-size: 20px 20px;
-            background-color: #f0f0f0; /* Checkerboard for transparency */
-            
-            border-radius: 12px;
-            border: 2px solid var(--border-color);
-            min-height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            transition: border-color 0.3s;
+            background-color: #f0f0f0;
+            border-radius: 12px; border: 2px solid var(--border-color); min-height: 400px;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); transition: border-color 0.3s;
+            position: relative; z-index: 1;
         }
-
-        /* Dark mode checkerboard override */
         body:not(.light-mode) .canvas-container {
             background-image: linear-gradient(45deg, #222 25%, transparent 25%), 
                               linear-gradient(-45deg, #222 25%, transparent 25%), 
@@ -331,70 +279,34 @@
                               linear-gradient(-45deg, transparent 75%, #222 75%);
             background-color: #1a1a1a;
         }
-
-        canvas#mainCanvas { 
-            max-width: 100%; 
-            max-height: 600px; 
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); 
-        }
+        canvas#mainCanvas { max-width: 100%; max-height: 600px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); }
 
         /* Gallery Grid */
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 1rem;
-        }
-        
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
         .gallery-item {
-            position: relative;
-            border-radius: 8px;
-            overflow: hidden;
-            aspect-ratio: 1;
-            border: 2px solid var(--border-color);
-            background: var(--bg-card);
-            transition: 0.3s;
+            position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 1;
+            border: 2px solid var(--border-color); background: var(--bg-card); transition: 0.3s;
         }
-
         .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
         .gallery-item:hover img { transform: scale(1.05); }
-        
-        .gallery-item:hover {
-            border: 2px solid transparent;
-            box-shadow: 0 0 0 1px var(--bg-main), 0 0 0 3px #ff00c8;
-        }
-
+        .gallery-item:hover { border: 2px solid transparent; box-shadow: 0 0 0 1px var(--bg-main), 0 0 0 3px #ff00c8; }
         .gallery-actions {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(4px);
-            padding: 8px;
-            display: flex;
-            gap: 5px;
-            opacity: 0;
-            transition: opacity 0.2s;
+            position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(4px); padding: 8px; display: flex; gap: 5px; opacity: 0; transition: opacity 0.2s;
         }
         .gallery-item:hover .gallery-actions { opacity: 1; }
         .gallery-actions button { margin: 0; padding: 4px; font-size: 0.8rem; }
 
         /* Status Toast */
         .status-msg {
-            position: fixed;
-            bottom: 20px; right: 20px;
-            background: var(--bg-card);
-            color: var(--text-main);
-            padding: 10px 20px;
-            border-radius: 50px;
-            border: 2px solid transparent;
-            border-image: var(--rainbow-gradient) 1;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-            transform: translateY(150%);
-            transition: transform 0.3s;
-            font-weight: 600;
-            z-index: 1000;
+            position: fixed; bottom: 20px; right: 20px; background: var(--bg-card); color: var(--text-main);
+            padding: 10px 20px; border-radius: 50px; border: 2px solid transparent;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); transform: translateY(150%);
+            transition: transform 0.3s; font-weight: 600; z-index: 1000;
         }
         .status-msg.show { transform: translateY(0); }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -402,7 +314,13 @@
     <canvas id="matrixCanvas"></canvas>
 
 <header>
-    <h1>HarueeyyySH</h1>
+    <h1>Mark's Gallery</h1>
+    
+    <!-- Live World Clock -->
+    <div class="header-clock">
+        <div id="localTime" class="time-display">00:00:00</div>
+        <div id="worldTime" class="world-time">UTC 00:00:00</div>
+    </div>
     
     <!-- Theme Switch -->
     <div class="theme-switch-container">
@@ -434,45 +352,20 @@
             </div>
         </div>
 
-        <!-- NEW Advanced Filters -->
         <div class="control-group">
             <label>3. Adjustments</label>
-            
-            <!-- Brightness -->
-            <div class="range-header">
-                <span>Brightness</span>
-                <span id="brightVal" class="range-val">100%</span>
-            </div>
+            <div class="range-header"><span>Brightness</span><span id="brightVal" class="range-val">100%</span></div>
             <input type="range" id="brightRange" min="0" max="200" value="100">
-
-            <!-- Contrast -->
-            <div class="range-header" style="margin-top: 10px;">
-                <span>Contrast</span>
-                <span id="contrastVal" class="range-val">100%</span>
-            </div>
+            <div class="range-header" style="margin-top: 10px;"><span>Contrast</span><span id="contrastVal" class="range-val">100%</span></div>
             <input type="range" id="contrastRange" min="0" max="200" value="100">
-
-            <!-- Saturation -->
-            <div class="range-header" style="margin-top: 10px;">
-                <span>Saturation</span>
-                <span id="satVal" class="range-val">100%</span>
-            </div>
+            <div class="range-header" style="margin-top: 10px;"><span>Saturation</span><span id="satVal" class="range-val">100%</span></div>
             <input type="range" id="satRange" min="0" max="200" value="100">
-
-            <!-- Blur -->
-            <div class="range-header" style="margin-top: 10px;">
-                <span>Blur</span>
-                <span id="blurVal" class="range-val">0px</span>
-            </div>
+            <div class="range-header" style="margin-top: 10px;"><span>Opacity</span><span id="opacVal" class="range-val">100%</span></div>
+            <input type="range" id="opacRange" min="0" max="100" value="100">
+            <div class="range-header" style="margin-top: 10px;"><span>Blur</span><span id="blurVal" class="range-val">0px</span></div>
             <input type="range" id="blurRange" min="0" max="10" value="0" step="0.1">
-
-            <!-- Hue Rotate -->
-            <div class="range-header" style="margin-top: 10px;">
-                <span>Hue Rotate</span>
-                <span id="hueVal" class="range-val">0deg</span>
-            </div>
+            <div class="range-header" style="margin-top: 10px;"><span>Hue Rotate</span><span id="hueVal" class="range-val">0deg</span></div>
             <input type="range" id="hueRange" min="0" max="360" value="0">
-
         </div>
 
         <div class="control-group">
@@ -484,7 +377,19 @@
         </div>
 
         <div class="control-group">
-            <label>5. Watermark</label>
+            <label>5. Quick Styles</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                <button class="btn-preset" onclick="applyPreset('vintage')">Vintage</button>
+                <button class="btn-preset" onclick="applyPreset('noir')">Noir</button>
+                <button class="btn-preset" onclick="applyPreset('cyberpunk')">Cyberpunk</button>
+                <button class="btn-preset" onclick="applyPreset('warm')">Warm</button>
+                <button class="btn-preset" onclick="applyPreset('cool')">Cool</button>
+                <button class="btn-preset" onclick="applyPreset('dramatic')">Dramatic</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>6. Watermark</label>
             <input type="text" id="wmText" placeholder="Type text here...">
             <button class="btn-primary" style="margin-top: 0.5rem;" onclick="saveToGallery()">Save to Gallery</button>
         </div>
@@ -492,18 +397,14 @@
 
     <!-- Main Editor & Gallery -->
     <section class="editor-area">
-        <!-- Canvas View -->
         <div class="canvas-container" id="canvasContainer">
             <p style="color: #888; text-align: center;" id="emptyText">No image loaded<br><span style="font-size:0.8rem">Use the sidebar to browse</span></p>
             <canvas id="mainCanvas" style="display: none;"></canvas>
         </div>
 
-        <!-- Gallery Section -->
         <div>
             <h3 style="margin-bottom: 1rem; color: var(--text-muted);">Session Gallery</h3>
-            <div class="gallery-grid" id="galleryGrid">
-                <!-- Items appear here -->
-            </div>
+            <div class="gallery-grid" id="galleryGrid"></div>
         </div>
     </section>
 </main>
@@ -511,44 +412,33 @@
 <div id="status" class="status-msg">Image Saved!</div>
 
 <script>
-    // Configuration State
+    // --- Core App Logic ---
     const state = {
         originalImage: null,
         scale: 100,
-        filters: {
-            grayscale: false,
-            invert: false,
-            sepia: false
-        },
-        // Slider Values
-        brightness: 100,
-        contrast: 100,
-        saturation: 100,
-        blur: 0,
-        hueRotate: 0,
-        
+        filters: { grayscale: false, invert: false, sepia: false },
+        brightness: 100, contrast: 100, saturation: 100, opacity: 100, blur: 0, hueRotate: 0,
         watermark: ''
     };
 
-    // DOM Elements
     const fileInput = document.getElementById('fileInput');
     const canvas = document.getElementById('mainCanvas');
     const ctx = canvas.getContext('2d');
     const emptyText = document.getElementById('emptyText');
     
-    // Sliders
     const resizeRange = document.getElementById('resizeRange');
     const brightRange = document.getElementById('brightRange');
     const contrastRange = document.getElementById('contrastRange');
     const satRange = document.getElementById('satRange');
+    const opacRange = document.getElementById('opacRange');
     const blurRange = document.getElementById('blurRange');
     const hueRange = document.getElementById('hueRange');
 
-    // Value Displays
     const resizeVal = document.getElementById('resizeVal');
     const brightVal = document.getElementById('brightVal');
     const contrastVal = document.getElementById('contrastVal');
     const satVal = document.getElementById('satVal');
+    const opacVal = document.getElementById('opacVal');
     const blurVal = document.getElementById('blurVal');
     const hueVal = document.getElementById('hueVal');
     
@@ -557,7 +447,6 @@
     const statusEl = document.getElementById('status');
     const themeToggle = document.getElementById('themeToggle');
 
-    // --- Theme Logic ---
     function toggleTheme() {
         const body = document.body;
         if (themeToggle.checked) {
@@ -569,13 +458,11 @@
         }
     }
 
-    // Check for saved theme on load
     if (localStorage.getItem('theme') === 'light') {
         document.body.classList.add('light-mode');
         themeToggle.checked = true;
     }
 
-    // --- Image Loading ---
     fileInput.addEventListener('change', (e) => {
         if(e.target.files && e.target.files[0]) {
             const reader = new FileReader();
@@ -583,7 +470,7 @@
                 const img = new Image();
                 img.onload = () => {
                     state.originalImage = img;
-                    resetFilters(); // Reset filters on new image
+                    resetFilters(); 
                     render();
                 };
                 img.src = evt.target.result;
@@ -592,167 +479,111 @@
         }
     });
 
-    // --- Slider Event Listeners ---
-    resizeRange.addEventListener('input', (e) => {
-        state.scale = parseInt(e.target.value);
-        resizeVal.innerText = state.scale + '%';
-        render();
-    });
+    // Slider Listeners
+    resizeRange.addEventListener('input', (e) => { state.scale = parseInt(e.target.value); resizeVal.innerText = state.scale + '%'; render(); });
+    brightRange.addEventListener('input', (e) => { state.brightness = e.target.value; brightVal.innerText = state.brightness + '%'; render(); });
+    contrastRange.addEventListener('input', (e) => { state.contrast = e.target.value; contrastVal.innerText = state.contrast + '%'; render(); });
+    satRange.addEventListener('input', (e) => { state.saturation = e.target.value; satVal.innerText = state.saturation + '%'; render(); });
+    opacRange.addEventListener('input', (e) => { state.opacity = e.target.value; opacVal.innerText = state.opacity + '%'; render(); });
+    blurRange.addEventListener('input', (e) => { state.blur = e.target.value; blurVal.innerText = state.blur + 'px'; render(); });
+    hueRange.addEventListener('input', (e) => { state.hueRotate = e.target.value; hueVal.innerText = state.hueRotate + 'deg'; render(); });
+    wmText.addEventListener('input', (e) => { state.watermark = e.target.value; render(); });
 
-    brightRange.addEventListener('input', (e) => {
-        state.brightness = e.target.value;
-        brightVal.innerText = state.brightness + '%';
-        render();
-    });
-
-    contrastRange.addEventListener('input', (e) => {
-        state.contrast = e.target.value;
-        contrastVal.innerText = state.contrast + '%';
-        render();
-    });
-
-    satRange.addEventListener('input', (e) => {
-        state.saturation = e.target.value;
-        satVal.innerText = state.saturation + '%';
-        render();
-    });
-
-    blurRange.addEventListener('input', (e) => {
-        state.blur = e.target.value;
-        blurVal.innerText = state.blur + 'px';
-        render();
-    });
-
-    hueRange.addEventListener('input', (e) => {
-        state.hueRotate = e.target.value;
-        hueVal.innerText = state.hueRotate + 'deg';
-        render();
-    });
-
-    wmText.addEventListener('input', (e) => {
-        state.watermark = e.target.value;
-        render();
-    });
-
-    // --- Filter Logic ---
     function toggleFilter(filterName) {
         state.filters[filterName] = !state.filters[filterName];
         const btnId = 'btn' + filterName.charAt(0).toUpperCase() + filterName.slice(1);
         const btn = document.getElementById(btnId);
         
         if(state.filters[filterName]) {
-            btn.classList.add('btn-active');
-            btn.classList.remove('btn-outline');
+            btn.classList.add('btn-active'); btn.classList.remove('btn-outline');
         } else {
-            btn.classList.remove('btn-active');
-            btn.classList.add('btn-outline');
+            btn.classList.remove('btn-active'); btn.classList.add('btn-outline');
         }
         render();
     }
 
+    function applyPreset(preset) {
+        state.filters.grayscale = false; state.filters.invert = false; state.filters.sepia = false;
+        updateFilterButtons();
+        switch(preset) {
+            case 'vintage': setValues({ bright: 110, contrast: 90, sat: 80, hue: 0, blur: 0 }); break;
+            case 'noir': state.filters.grayscale = true; setValues({ bright: 110, contrast: 120, sat: 0, hue: 0, blur: 0 }); break;
+            case 'cyberpunk': setValues({ bright: 110, contrast: 130, sat: 150, hue: 180, blur: 0 }); break;
+            case 'warm': setValues({ bright: 105, contrast: 105, sat: 110, hue: 10, blur: 0 }); break;
+            case 'cool': setValues({ bright: 100, contrast: 100, sat: 90, hue: 200, blur: 0 }); break;
+            case 'dramatic': setValues({ bright: 90, contrast: 150, sat: 120, hue: 0, blur: 0 }); break;
+        }
+        if(state.filters.grayscale) document.getElementById('btnGray').classList.add('btn-active');
+        if(state.filters.sepia) document.getElementById('btnSepia').classList.add('btn-active');
+        render();
+    }
+
+    function setValues(vals) {
+        state.brightness = vals.bright; state.contrast = vals.contrast; state.saturation = vals.sat;
+        state.hueRotate = vals.hue; state.blur = vals.blur;
+        brightRange.value = vals.bright; brightVal.innerText = vals.bright + '%';
+        contrastRange.value = vals.contrast; contrastVal.innerText = vals.contrast + '%';
+        satRange.value = vals.sat; satVal.innerText = vals.sat + '%';
+        hueRange.value = vals.hue; hueVal.innerText = vals.hue + 'deg';
+        blurRange.value = vals.blur; blurVal.innerText = vals.blur + 'px';
+    }
+
+    function updateFilterButtons() {
+        ['btnGray', 'btnInvert', 'btnSepia'].forEach(id => {
+            document.getElementById(id).classList.remove('btn-active');
+            document.getElementById(id).classList.add('btn-outline');
+        });
+    }
+
     function resetFilters() {
-        // Reset Slider States
-        state.brightness = 100;
-        state.contrast = 100;
-        state.saturation = 100;
-        state.blur = 0;
-        state.hueRotate = 0;
-        state.scale = 100;
-
-        // Reset Toggle States
-        state.filters.grayscale = false;
-        state.filters.invert = false;
-        state.filters.sepia = false;
-
-        // Update UI Inputs
+        state.brightness = 100; state.contrast = 100; state.saturation = 100;
+        state.opacity = 100; state.blur = 0; state.hueRotate = 0; state.scale = 100;
+        state.filters.grayscale = false; state.filters.invert = false; state.filters.sepia = false;
         brightRange.value = 100; brightVal.innerText = '100%';
         contrastRange.value = 100; contrastVal.innerText = '100%';
         satRange.value = 100; satVal.innerText = '100%';
+        opacRange.value = 100; opacVal.innerText = '100%';
         blurRange.value = 0; blurVal.innerText = '0px';
         hueRange.value = 0; hueVal.innerText = '0deg';
         resizeRange.value = 100; resizeVal.innerText = '100%';
-
-        // Update Buttons
-        document.querySelectorAll('.control-group .btn-outline, .control-group .btn-active').forEach(btn => {
-            if(btn.id.startsWith('btn')) {
-                btn.classList.remove('btn-active');
-                btn.classList.add('btn-outline');
-            }
-        });
-
+        updateFilterButtons();
         render();
     }
 
     function render() {
-        if(!state.originalImage) {
-            emptyText.style.display = 'block';
-            canvas.style.display = 'none';
-            return;
-        }
-
-        // Show canvas
-        emptyText.style.display = 'none';
-        canvas.style.display = 'block';
-
+        if(!state.originalImage) { emptyText.style.display = 'block'; canvas.style.display = 'none'; return; }
+        emptyText.style.display = 'none'; canvas.style.display = 'block';
         const width = Math.floor(state.originalImage.width * (state.scale / 100));
         const height = Math.floor(state.originalImage.height * (state.scale / 100));
-
-        canvas.width = width;
-        canvas.height = height;
-
-        // Build Filter String
+        canvas.width = width; canvas.height = height;
         let filterString = '';
-        
-        // Sliders
-        filterString += `brightness(${state.brightness}%) `;
-        filterString += `contrast(${state.contrast}%) `;
-        filterString += `saturate(${state.saturation}%) `;
-        filterString += `blur(${state.blur}px) `;
-        filterString += `hue-rotate(${state.hueRotate}deg) `;
-        
-        // Toggles
+        filterString += `opacity(${state.opacity / 100}) brightness(${state.brightness}%) contrast(${state.contrast}%) saturate(${state.saturation}%) blur(${state.blur}px) hue-rotate(${state.hueRotate}deg) `;
         if(state.filters.grayscale) filterString += 'grayscale(100%) ';
         if(state.filters.invert) filterString += 'invert(100%) ';
         if(state.filters.sepia) filterString += 'sepia(100%) ';
-
         ctx.filter = filterString.trim();
         ctx.drawImage(state.originalImage, 0, 0, width, height);
-        
-        // Draw Watermark (Reset filter for text)
         ctx.filter = 'none';
         if(state.watermark) {
             const fontSize = Math.max(16, width / 20);
             ctx.font = `bold ${fontSize}px sans-serif`;
             ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-            ctx.textAlign = "right";
-            ctx.textBaseline = "bottom";
-            
-            // Shadow for visibility
-            ctx.shadowColor = "rgba(0,0,0,0.9)";
-            ctx.shadowBlur = 4;
-            
+            ctx.textAlign = "right"; ctx.textBaseline = "bottom";
+            ctx.shadowColor = "rgba(0,0,0,0.9)"; ctx.shadowBlur = 4;
             ctx.fillText(state.watermark, width - 20, height - 20);
             ctx.shadowBlur = 0; 
         }
     }
 
     function saveToGallery() {
-        if(!state.originalImage) {
-            showToast("Please upload an image first!", true);
-            return;
-        }
-
+        if(!state.originalImage) { showToast("Please upload an image first!", true); return; }
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-
         const div = document.createElement('div');
         div.className = 'gallery-item';
-        
         const img = document.createElement('img');
         img.src = dataUrl;
-        
         const actions = document.createElement('div');
         actions.className = 'gallery-actions';
-        
         const dlBtn = document.createElement('button');
         dlBtn.className = 'btn-primary';
         dlBtn.innerText = 'Download';
@@ -762,11 +593,9 @@
             a.href = dataUrl;
             a.click();
         };
-
         actions.appendChild(dlBtn);
         div.appendChild(img);
         div.appendChild(actions);
-        
         galleryGrid.prepend(div);
         showToast("Saved to Gallery!");
     }
@@ -774,73 +603,89 @@
     function showToast(msg, isError = false) {
         statusEl.innerText = msg;
         statusEl.style.border = "2px solid " + (isError ? '#ef4444' : '#22c55e');
-        // Hack to remove border-image gradient override for status
         statusEl.style.borderImage = 'none'; 
-        
         statusEl.classList.add('show');
         setTimeout(() => statusEl.classList.remove('show'), 3000);
     }
 
     /* ==========================================
-       MATRIX RAIN ANIMATION LOGIC
+       MATRIX RAIN ANIMATION (DUAL MODE)
        ========================================== */
     const matrixCanvas = document.getElementById('matrixCanvas');
     const matrixCtx = matrixCanvas.getContext('2d');
 
-    // Setting the width and height of the canvas
     function resizeMatrixCanvas() {
         matrixCanvas.width = window.innerWidth;
         matrixCanvas.height = window.innerHeight;
     }
+    
     resizeMatrixCanvas();
     window.addEventListener('resize', resizeMatrixCanvas);
 
-    // The characters to be used (Katakana and numbers)
-    const chars = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789HARUUEYY";
+    const chars = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789HARUEY";
     const charArray = chars.split("");
 
     const fontSize = 14;
-    const columns = matrixCanvas.width / fontSize; // Number of columns for the rain
-
-    // An array of drops - one per column
+    let columns = matrixCanvas.width / fontSize; 
     const drops = [];
-    // x is the x coordinate
-    // 1 = y co-ordinate of the drop(same for every drop initially)
     for (let x = 0; x < columns; x++) drops[x] = 1;
 
-    // Drawing the characters
     function drawMatrix() {
-        // Black BG for the canvas with opacity for fade effect
-        // This creates the trail effect
-        matrixCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
+        // Check if Light Mode is active
+        const isLightMode = document.body.classList.contains('light-mode');
+
+        // 1. Create the fade trail effect
+        if (isLightMode) {
+            // Light Mode: White fade trail
+            matrixCtx.fillStyle = "rgba(255, 255, 255, 0.05)"; 
+        } else {
+            // Dark Mode: Black fade trail
+            matrixCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
+        }
         matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
 
-        matrixCtx.fillStyle = "#0F0"; // Green text
+        // 2. Set Text Color
+        if (isLightMode) {
+            // Light Mode: Grey text (subtle digital rain look)
+            matrixCtx.fillStyle = "#aaaaaa"; 
+        } else {
+            // Dark Mode: Classic Green text
+            matrixCtx.fillStyle = "#0F0"; 
+        }
+        
         matrixCtx.font = fontSize + "px monospace";
 
-        // Looping over drops
         for (let i = 0; i < drops.length; i++) {
-            // A random character to print
             const text = charArray[Math.floor(Math.random() * charArray.length)];
-
-            // Printing the character
             matrixCtx.fillText(text, i * fontSize, drops[i] * fontSize);
 
-            // Sending the drop back to the top randomly after it has crossed the screen
-            // Adding randomness to the reset to make the drops scattered on the Y axis
             if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
                 drops[i] = 0;
             }
-
-            // Incrementing Y coordinate
             drops[i]++;
         }
     }
 
-    // Run matrix animation every 35ms
+    // Run every 35ms
     setInterval(drawMatrix, 35);
 
-</script>
+    /* ==========================================
+       LIVE WORLD CLOCK LOGIC
+       ========================================== */
+    const localTimeEl = document.getElementById('localTime');
+    const worldTimeEl = document.getElementById('worldTime');
 
+    function updateClocks() {
+        const now = new Date();
+        const localTimeStr = now.toLocaleTimeString('en-US', { hour12: true });
+        localTimeEl.innerText = localTimeStr;
+        const utcTimeStr = now.toLocaleTimeString('en-US', { timeZone: 'UTC', hour12: false });
+        worldTimeEl.innerText = `UTC ${utcTimeStr}`;
+    }
+
+    updateClocks();
+    setInterval(updateClocks, 1000);
+
+</script>
 </body>
 </html>
